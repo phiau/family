@@ -26,11 +26,11 @@ public class UserController {
     @Autowired
     private INodeService nodeService;
 
-    @RequestMapping(value = "/login")
-    public Account login(String name) {
-        Account account = accountService.findByName(name);
-        return account;
-    }
+//    @RequestMapping(value = "/login")
+//    public Account login(String name) {
+//        Account account = accountService.findByName(name);
+//        return account;
+//    }
 
     @RequestMapping(value = "/xu")
     public List<Xu> xu() {
