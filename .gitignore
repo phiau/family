@@ -1,5 +1,7 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
+src/main/resources/static
+!src/main/resources/static/familyJs
 
 ### STS ###
 .apt_generated
