@@ -3,9 +3,7 @@ package com.hj.phiau.repository.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * @author zhenbiao.cai
@@ -17,7 +15,9 @@ import javax.persistence.Table;
 @Table(name = "t_u_node")
 public class Node {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+    private int xu;
     private int parent;
     private String name;
     private String info;

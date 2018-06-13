@@ -4,6 +4,7 @@ var selectNode = null;
 var map = new Map();
 getXu();
 var xuDataList;
+var nodeList;
 
 function doGetAjax(url, param, callback) {
     $.ajax({
@@ -42,6 +43,66 @@ function getXu() {
     });
 }
 
+function addNode2tree(node) {
+
+}
+
+function nodes2tree(nl) {
+    nl.sort(function (a, b) { a.xu - b.xu; })
+    rootNode = nodeFromItem(nl[0]);
+    map.set(rootNode.item.id, rootNode);
+
+    for (var i=1; i<nl.length; i++) {
+        var pn = map.get(nl[i].parent);
+        var cn = nodeFromItem(nl[i]);
+        nodeAddChild(pn, cn);
+        map.set(cn.item.id, cn);
+    }
+    reload(rootNode);
+    log(rootNode);
+}
+
+function getNodes() {
+    doGetAjax("/get/nodes", null, function (data) {
+        if (null != data && 0 < data.length) {
+            log(data);
+            nodeList = JSON.parse(data);
+            log(nodeList);
+            nodes2tree(nodeList);
+        } else {
+            nodeList = new Array();
+        }
+    });
+}
+
+function Item(name, xu, info, parent) {
+    this.id = 0;
+    this.name = name;
+    this.xu = xu;
+    this.info = info;
+    this.parent = parent;
+}
+
+function saveNode(item) {
+    doPostAjax("/save/node", item, function (data) {
+        if (200 == data) {
+            alert("保存节点成功");
+        } else {
+            alert("保存节点失败");
+        }
+    });
+}
+
+function saveRootNode(item) {
+    doPostAjax("/save/root", item, function (data) {
+        if (200 == data) {
+            alert("保存根节点成功");
+        } else {
+            alert("保存根节点失败");
+        }
+    });
+}
+
 function saveTree(data) {
     var params = {};
     params['tree'] = data;
@@ -50,14 +111,6 @@ function saveTree(data) {
             alert("保存成功");
         } else {
             alert("保存失败");
-        }
-    });
-}
-
-function getTree() {
-    doGetAjax("/get/tree", null, function (data) {
-        if (null != data && 0 < data.length) {
-            log(data);
         }
     });
 }
@@ -74,20 +127,13 @@ function genId() {
     return presentId;
 }
 
-function Item(name, shiXu, info, parentName) {
-    this.name = name;
-    this.shiXu = shiXu;
-    this.info = info;
-    this.parentName = parentName;
-}
-
 function itemFromVal() {
     var xu = getShiXu().val();
     return new Item($("#name").val(), xu, $("#info").val(), getParent().val())
 }
 
 function itemFromObj(obj) {
-    return new Item(obj.name, obj.shiXu, obj.info, obj.parentName)
+    return new Item(obj.name, obj.xu, obj.info, obj.parent)
 }
 
 function nodeAddChild(node, childNode) {
@@ -126,10 +172,6 @@ function nodeFromItem(item) {
 
 function log(o) {
     window.console.log(o);
-}
-
-function initRootNode(item) {
-    rootNode = nodeFromItem(item);
 }
 
 function findNextXuIndex(prXu, xuList) {
@@ -177,12 +219,14 @@ function addChildClick() {
     if (null == rootNode) {
         getAddBun().text("添加节点");
         rootNode = nodeFromItem(item);
+        saveRootNode(item);
         rootNode.id = genId();
         map.set(rootNode.id, rootNode);
         reload(rootNode);
         $('#tree').treeview('toggleNodeSelected', [0]);
     } else {
         var childNode = nodeFromItem(item);
+        saveNode(item);
         nodeAddChild(selectNode, childNode);
         map.set(childNode.id, childNode);
         reload(rootNode);
@@ -222,19 +266,21 @@ function stringIsNullOrEmpty(s) {
 
 var s = localStorage.getItem("rootNodeCache");
 
-if (isUndefined(xuDataList)) {
-    alert("请先添加序");
-} else if (stringIsNullOrEmpty(s)) {
-    getAddBun().text("添加根");
-    setElemVal(getShiXu(), xuDataList[0]);
-} else {
-    getAddBun().text("添加节点");
-    getAddBun().attr("disabled", true);
-    rootNode = JSON.parse(s);
-    finishMap(rootNode);
-    reloadIn(s);
-    $('#tree').treeview('expandAll');
-}
+getNodes();
+
+// if (isUndefined(xuDataList)) {
+//     alert("请先添加序");
+// } else if (stringIsNullOrEmpty(s)) {
+//     getAddBun().text("添加根");
+//     setElemVal(getShiXu(), xuDataList[0]);
+// } else {
+//     getAddBun().text("添加节点");
+//     getAddBun().attr("disabled", true);
+//     rootNode = JSON.parse(s);
+//     finishMap(rootNode);
+//     reloadIn(s);
+//     $('#tree').treeview('expandAll');
+// }
 
 function setElemVal(obj, v) {
     obj.attr("disabled", false);

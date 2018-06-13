@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * @author zhenbiao.cai
  * @date 2018/6/10 14:12
@@ -17,6 +19,11 @@ public class NodeServiceImpl implements INodeService {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Override
+    public List<Node> findAll() {
+        return nodeRepository.findAll();
+    }
 
     @Override
     public void saveNode(Node node) {

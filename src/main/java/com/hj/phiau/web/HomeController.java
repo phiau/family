@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hj.phiau.comm.BaseConstantCode;
 import com.hj.phiau.repository.entity.Account;
+import com.hj.phiau.repository.entity.Node;
 import com.hj.phiau.repository.entity.Xu;
 import com.hj.phiau.service.IAccountService;
+import com.hj.phiau.service.INodeService;
 import com.hj.phiau.service.IXuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +31,8 @@ public class HomeController {
     private IXuService xuService;
     @Autowired
     private IAccountService accountService;
+    @Autowired
+    private INodeService nodeService;
 
     @RequestMapping("/")
     public String index(HashMap<String, Object> map) {
@@ -86,4 +90,37 @@ public class HomeController {
         if (null == list || 0 >= list.size()) return "";
         return new Gson().toJson(list.stream().map(Xu::getXu).collect(Collectors.toList()));
     }
+
+    @RequestMapping("save/root")
+    @ResponseBody
+    public int saveRootNode(int xu, String name, String info) {
+        Node node = new Node();
+        node.setInfo(info);
+        node.setName(name);
+        node.setXu(xu);
+        nodeService.saveNode(node);
+        return BaseConstantCode.OK;
+    }
+
+    @RequestMapping("save/node")
+    @ResponseBody
+    public int saveNode(int xu, int parent, String name, String info) {
+        Node node = new Node();
+        node.setParent(parent);
+        node.setInfo(info);
+        node.setName(name);
+        node.setXu(xu);
+        nodeService.saveNode(node);
+        return BaseConstantCode.OK;
+    }
+
+    @RequestMapping("get/nodes")
+    @ResponseBody
+    public String getNode() {
+        List<Node> list = nodeService.findAll();
+        if (null == list || 0 >= list.size()) return "";
+        return new Gson().toJson(list);
+    }
+
+
 }
