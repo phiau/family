@@ -34,4 +34,9 @@ public class XuServiceImpl implements IXuService {
     public void deleteXu(Xu xu) {
         xuRepository.delete(xu);
     }
+
+    @Override
+    public void deleteAll() {
+        xuRepository.deleteAll();
+    }
 }

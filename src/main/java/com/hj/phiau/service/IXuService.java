@@ -16,4 +16,6 @@ public interface IXuService {
 
     void deleteXu(Xu xu);
 
+    void deleteAll();
+
 }
