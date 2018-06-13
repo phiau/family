@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Bootstrap Admin Theme v3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link th:href="@{bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- styles -->
+    <link th:href="@{css/styles.css}" rel="stylesheet">
+    <link th:href="@{vendors/form-helpers/css/bootstrap-formhelpers.min.css}" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="page-content">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="sidebar content-box" style="display: block;">
+                    <ul class="nav">
+                        <!-- Main menu -->
+                        <li><a href="/"><i class="glyphicon glyphicon-home"></i> 序</a></li>
+                        <li class="current"><a href="familyTree"><i class="glyphicon glyphicon-calendar"></i> 树</a></li>
+                        <li><a href="stats.html"><i class="glyphicon glyphicon-stats"></i> Statistics (Charts)</a></li>
+                        <li><a href="tables.html"><i class="glyphicon glyphicon-list"></i> Tables</a></li>
+                        <li><a href="../buttons.html"><i class="glyphicon glyphicon-record"></i> Buttons</a></li>
+                        <li><a href="editors.html"><i class="glyphicon glyphicon-pencil"></i> Editors</a></li>
+                        <li><a href="../forms.html"><i class="glyphicon glyphicon-tasks"></i> Forms</a></li>
+                        <li class="submenu">
+                            <a href="#">
+                            <i class="glyphicon glyphicon-list"></i> Pages
+                            <span class="caret pull-right"></span>
+                         </a>
+                            <!-- Sub menu -->
+                            <ul>
+                                <li><a href="login.html">Login</a></li>
+                                <li><a href="signup.html">Signup</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="content-box-large">
+                            <div class="panel-heading">
+                                <div class="panel-title">树状图</div>
+                            </div>
+                            <div class="panel-body">
+                                <form class="form-horizontal">
+                                    <div id="tree"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="content-box-large">
+                            <div class="panel-heading">
+                                <div class="panel-title">增加子节点</div>
+                            </div>
+                            <div class="panel-body">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">世序</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="shiXu" placeholder="世序">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">传承</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="parentName" placeholder="传承">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">姓名</label>
+                                        <div class="col-sm-10">
+                                            <input id="name" class="form-control" placeholder="姓名">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">个人信息</label>
+                                        <div class="col-sm-10">
+                                            <textarea class="form-control" placeholder="个人信息" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                            <button id="addBtn" type="button" class="btn btn-primary" onclick="addChildClick()">Sign in</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer navbar-fixed-bottom ">
+        <div class="container">
+            <div class="copy text-center">
+                Copyright 2014 <a href='#'>Website</a>
+            </div>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script th:src="@{bootstrap/js/bootstrap.min.js}"></script>
+    <script th:src="@{js/custom.js}"></script>
+    <script th:src="@{bootstrap-treeview-1.2.0/src/js/bootstrap-treeview.js}"></script>
+    <script th:src="@{familyJs/familyTree.js}"></script>
+    <script th:src="@{familyJs/comm.js}"></script>
+    <script type="text/javascript">
+
+	    function initSelectBox(list) {
+	    	if (null != list) {
+	    		var s;
+	    		for (var i = 0; i < list.length; i++) {
+	    			s = '<div data-value="' + i + '">' + list[i] + '</div>';
+	    			$('#xuSelectBox').append(s);
+	    		}
+	    	}
+	    }
+
+	    function clickSelect(obj) {
+	    	var index = $('#xuSelectBox').val();
+	    	log("---" + selectData[index]);
+	    	log("---" + findNextXu(selectData[index], selectData));
+	    }
+
+	    function findNextXu(xu, list) {
+	    	for (var i = 0; i < list.length; i++) {
+	    		if (xu == list[i]) {
+	    			return list[i+1];
+	    		}
+	    	}
+	    	return null;
+	    }
+
+		var selectData = JSON.parse(localStorage.getItem("xuList"));
+		initSelectBox(selectData);
+
+    </script>
+    <script src="../vendors/form-helpers/js/bootstrap-formhelpers.min.js"></script>
+</body>
+
+</html>
