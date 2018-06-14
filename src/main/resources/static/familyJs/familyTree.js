@@ -43,10 +43,6 @@ function getXu() {
     });
 }
 
-function addNode2tree(node) {
-
-}
-
 function nodes2tree(nl) {
     nl.sort(function (a, b) { a.xu - b.xu; })
     rootNode = nodeFromItem(nl[0]);
@@ -59,24 +55,37 @@ function nodes2tree(nl) {
         map.set(cn.item.id, cn);
     }
     reload(rootNode);
+    $('#tree').treeview('expandAll');
     log(rootNode);
 }
 
 function getNodes() {
     doGetAjax("/get/nodes", null, function (data) {
         if (null != data && 0 < data.length) {
-            log(data);
             nodeList = JSON.parse(data);
             log(nodeList);
             nodes2tree(nodeList);
         } else {
             nodeList = new Array();
         }
+
+        if (0 < nodeList.length) {
+            for (var i=0; i<nodeList.length; i++) {
+                if (presentId < nodeList[i].id) {
+                    presentId = nodeList[i].id;
+                }
+            }
+            nodes2tree(nodeList);
+            getAddBun().text("添加节点");
+        } else {
+            getAddBun().text("添加根");
+            setElemVal(getShiXu(), xuDataList[0]);
+        }
     });
 }
 
 function Item(name, xu, info, parent) {
-    this.id = 0;
+    this.id = genId();
     this.name = name;
     this.xu = xu;
     this.info = info;
@@ -128,12 +137,13 @@ function genId() {
 }
 
 function itemFromVal() {
-    var xu = getShiXu().val();
-    return new Item($("#name").val(), xu, $("#info").val(), getParent().val())
-}
-
-function itemFromObj(obj) {
-    return new Item(obj.name, obj.xu, obj.info, obj.parent)
+    var xu = findXuIndex(xuDataList, getShiXu().val());
+    var parent = 0;
+    if (0 < nodeList.length) {
+        parent = selectNode.item.id;
+        xu = selectNode.item.id + 1;
+    }
+    return new Item($("#name").val(), xu, $("#info").val(), parent);
 }
 
 function nodeAddChild(node, childNode) {
@@ -152,15 +162,10 @@ function node2String(node) {
 }
 
 function Node() {
-
     this.fromItem = function(item) {
+        log('fromItem;' + item);
         this.item = item;
         this.text = item.name;
-    }
-
-    this.fromObj = function(obj) {
-        this.item = itemFromObj(obj.item);
-        this.text = obj.text;
     }
 }
 
@@ -174,24 +179,17 @@ function log(o) {
     window.console.log(o);
 }
 
-function findNextXuIndex(prXu, xuList) {
-    var index = xuList.indexOf(prXu);
-    if(index >= 0 && index < xuList.length - 1) {
-        return nextItem = xuList[index + 1]
-    }
-    return null;
+function findXuIndex(xuVal, xuList) {
+    return xuList.indexOf(xuVal);
 }
 
 function reloadIn(s) {
     $('#tree').treeview({
         data: "[" + s + "]",
         onNodeSelected: function(event, node) {
-            selectNode = map.get(node.id);
+            selectNode = map.get(node.item.id);
             setElemVal(getParent(), selectNode.item.name);
-
-            var nextXuIndex = findNextXuIndex(selectNode.item.shiXu, xuDataList);
-            setElemVal(getShiXu(), nextXuIndex);
-
+            setElemVal(getShiXu(), xuDataList[selectNode.item.xu + 1]);
             getAddBun().attr("disabled", false);
         }
     });
@@ -204,7 +202,7 @@ function reload(rn) {
 function addChildClick() {
     var name = $("#name").val();
     var parentName = getParent().val();
-    if (null != rootNode) {
+    if (0 < nodeList.length) {
         if ("" == parentName || isUndefined(parentName)) {
             alert("传承不能为空");
             return null;
@@ -216,71 +214,14 @@ function addChildClick() {
     }
     $('#addBtn').attr("disabled", true);
     var item = itemFromVal();
-    if (null == rootNode) {
-        getAddBun().text("添加节点");
-        rootNode = nodeFromItem(item);
-        saveRootNode(item);
-        rootNode.id = genId();
-        map.set(rootNode.id, rootNode);
-        reload(rootNode);
-        $('#tree').treeview('toggleNodeSelected', [0]);
-    } else {
-        var childNode = nodeFromItem(item);
-        saveNode(item);
-        nodeAddChild(selectNode, childNode);
-        map.set(childNode.id, childNode);
-        reload(rootNode);
-        $('#tree').treeview('expandAll');
-    }
-    saveRootNodeToCache(rootNode);
+    saveNode(item);
+    nodeList.push(item);
+    nodes2tree(nodeList);
+    getAddBun().text("添加节点");
 }
-
-function saveRootNodeToCache(node) {
-    localStorage.setItem("rootNodeCache", JSON.stringify(node));
-    saveTree(JSON.stringify(node));
-}
-
-function getRootNodeFromCache() {
-    return JSON.parse(localStorage.getItem("rootNodeCache"));
-}
-
-
-function finishMap(node) {
-    if (undefined != node) {
-        map.set(node.id, node);
-        if (presentId < node.id) {
-            presentId = node.id;
-        }
-        if (undefined != node.nodes) {
-            for (var i = 0; i < node.nodes.length; i++) {
-                finishMap(node.nodes[i]);
-            }
-        }
-    }
-}
-
-
-function stringIsNullOrEmpty(s) {
-    return null == s || "" == s || undefined == s;
-}
-
-var s = localStorage.getItem("rootNodeCache");
 
 getNodes();
 
-// if (isUndefined(xuDataList)) {
-//     alert("请先添加序");
-// } else if (stringIsNullOrEmpty(s)) {
-//     getAddBun().text("添加根");
-//     setElemVal(getShiXu(), xuDataList[0]);
-// } else {
-//     getAddBun().text("添加节点");
-//     getAddBun().attr("disabled", true);
-//     rootNode = JSON.parse(s);
-//     finishMap(rootNode);
-//     reloadIn(s);
-//     $('#tree').treeview('expandAll');
-// }
 
 function setElemVal(obj, v) {
     obj.attr("disabled", false);

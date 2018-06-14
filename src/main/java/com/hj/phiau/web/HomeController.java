@@ -104,8 +104,9 @@ public class HomeController {
 
     @RequestMapping("save/node")
     @ResponseBody
-    public int saveNode(int xu, int parent, String name, String info) {
+    public int saveNode(int id, int xu, int parent, String name, String info) {
         Node node = new Node();
+        node.setId(id);
         node.setParent(parent);
         node.setInfo(info);
         node.setName(name);
